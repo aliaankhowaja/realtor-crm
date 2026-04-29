@@ -7,7 +7,7 @@ import ActivityTimeline from '@/components/leads/ActivityTimeline'
 
 export default function AgentLeadDetailPage() {
     const params = useParams()
-    const leadId = params.id as string
+    const leadId = params?.id as string
 
     const [lead, setLead] = useState<ILead | null>(null)
     const [formData, setFormData] = useState({

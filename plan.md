@@ -1,0 +1,1 @@
+The issue was that `lead.assigned:agent` wasn't firing when a new lead was assigned, due to issues in how the backend `broadcast` route accesses `io` globally and the socket server initialization, and we also fixed typing/suspense in the client code.

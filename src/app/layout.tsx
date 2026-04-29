@@ -1,6 +1,8 @@
 import type { Metadata } from "next";
 import { Geist, Geist_Mono } from "next/font/google";
 import { ToastProvider } from "@/app/ToastProvider";
+import { AuthProvider } from "@/app/AuthProvider";
+import BackButton from "@/components/ui/BackButton";
 import "./globals.css";
 
 const geistSans = Geist({
@@ -29,7 +31,12 @@ export default function RootLayout({
       className={`${geistSans.variable} ${geistMono.variable} h-full antialiased`}
     >
       <body className="min-h-full flex flex-col">
-        <ToastProvider>{children}</ToastProvider>
+        <AuthProvider>
+          <ToastProvider>
+            <BackButton />
+            {children}
+          </ToastProvider>
+        </AuthProvider>
       </body>
     </html>
   );

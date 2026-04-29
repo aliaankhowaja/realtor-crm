@@ -1,5 +1,6 @@
 import connectDB from '@/lib/db'
 import { getSessionUser } from '@/lib/getSessionUser'
+import { broadcast } from '@/lib/broadcast'
 import Lead from '@/models/Lead'
 import Activity from '@/models/Activity'
 import { adminRateLimit, agentRateLimit } from '@/middleware/rateLimit'
@@ -115,13 +116,8 @@ export async function POST(request: Request) {
       performedBy: user.id
     })
 
-    // Emit socket event if available
-    const socketServer = (globalThis as typeof globalThis & {
-      io?: { emit: (event: string, payload: unknown) => void }
-    }).io
-    if (socketServer) {
-      socketServer.emit('lead:created', lead)
-    }
+    // Emit socket event
+    await broadcast(request, 'lead:created', lead)
 
     // Send email notification to admin
     const adminEmail = process.env.ADMIN_EMAIL

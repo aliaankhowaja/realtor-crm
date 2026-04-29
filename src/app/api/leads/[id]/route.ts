@@ -1,5 +1,6 @@
 import connectDB from '@/lib/db'
 import { getSessionUser } from '@/lib/getSessionUser'
+import { broadcast } from '@/lib/broadcast'
 import Lead from '@/models/Lead'
 import Activity from '@/models/Activity'
 import { adminRateLimit, agentRateLimit } from '@/middleware/rateLimit'
@@ -103,13 +104,8 @@ export async function PUT(request: Request, { params }: { params: Promise<{ id: 
       performedBy: user.id
     })
 
-    // Emit socket event if available
-    const socketServer = (globalThis as typeof globalThis & {
-      io?: { emit: (event: string, payload: unknown) => void }
-    }).io
-    if (socketServer) {
-      socketServer.emit('lead:updated', updatedLead)
-    }
+    // Emit socket event
+    await broadcast(request, 'lead:updated', updatedLead)
 
     return Response.json(updatedLead, { status: 200 })
   } catch (error) {

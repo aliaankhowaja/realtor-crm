@@ -1,13 +1,33 @@
 'use client'
-import { useEffect } from 'react'
-import { getSocket } from '@/lib/socket'
+import { useEffect, useRef } from 'react'
+import { initSocket } from '@/lib/socket'
 
 export function useSocket(event: string, callback: (data: any) => void) {
+  const cbRef = useRef(callback)
+  
   useEffect(() => {
-    const socket = getSocket()
-    socket.on(event, callback)
-    return () => {
-      socket.off(event, callback)
+    cbRef.current = callback
+  }, [callback])
+
+  useEffect(() => {
+    let isActive = true
+    
+    // Wrapper to ensure we only call the latest callback
+    const handleEvent = (data: any) => {
+      if (isActive) cbRef.current(data)
     }
-  }, [event, callback])
+
+    initSocket().then((socket) => {
+      if (isActive) {
+        socket.on(event, handleEvent)
+      }
+    }).catch(console.error)
+
+    return () => {
+      isActive = false
+      initSocket().then((socket) => {
+        socket.off(event, handleEvent)
+      }).catch(console.error)
+    }
+  }, [event])
 }

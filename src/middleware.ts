@@ -1,7 +1,7 @@
 import { getToken } from 'next-auth/jwt'
 import { NextRequest, NextResponse } from 'next/server'
 
-const publicPaths = ['/login', '/signup', '/api/auth']
+const publicPaths = ['/login', '/signup', '/api/auth', '/api/socket']
 
 function isPublicPath(pathname: string): boolean {
   return publicPaths.some((path) => pathname.startsWith(path))

@@ -1,7 +1,10 @@
 'use client'
 
 import Link from 'next/link'
-import { useEffect, useMemo, useState } from 'react'
+import { useCallback, useEffect, useMemo, useState } from 'react'
+import { useSession } from 'next-auth/react'
+import { useToastContext } from '@/app/ToastProvider'
+import { useSocket } from '@/hooks/useSocket'
 
 import FollowUpAlerts from '@/components/dashboard/FollowUpAlerts'
 import SummaryCards from '@/components/dashboard/SummaryCards'
@@ -19,40 +22,45 @@ export default function AgentDashboardPage() {
     const [loading, setLoading] = useState(true)
     const [error, setError] = useState('')
 
-    useEffect(() => {
-        let active = true
+    const { data: session } = useSession()
+    const { showToast } = useToastContext()
 
-        const fetchLeads = async () => {
-            try {
-                setLoading(true)
-                setError('')
+    const fetchLeads = useCallback(async () => {
+        try {
+            setLoading(true)
+            setError('')
 
-                const response = await fetch('/api/leads')
-                if (!response.ok) {
-                    throw new Error('Failed to load leads')
-                }
-
-                const data = (await response.json()) as LeadRecord[]
-                if (active) {
-                    setLeads(data)
-                }
-            } catch {
-                if (active) {
-                    setError('Failed to load your dashboard.')
-                }
-            } finally {
-                if (active) {
-                    setLoading(false)
-                }
+            const response = await fetch('/api/leads')
+            if (!response.ok) {
+                throw new Error('Failed to load leads')
             }
-        }
 
-        fetchLeads()
-
-        return () => {
-            active = false
+            const data = (await response.json()) as LeadRecord[]
+            setLeads(data)
+        } catch {
+            setError('Failed to load your dashboard.')
+        } finally {
+            setLoading(false)
         }
     }, [])
+
+    useEffect(() => {
+        void fetchLeads()
+    }, [fetchLeads])
+
+    useSocket('lead:assigned', useCallback((data: any) => {
+        if (data.agentId === session?.user?.id) {
+            void fetchLeads()
+            showToast('A new lead has been assigned to you', 'info')
+        } else if (leads.some(l => l._id === data.leadId)) {
+            // It was assigned away from this agent
+            void fetchLeads()
+        }
+    }, [fetchLeads, session?.user?.id, showToast, leads]))
+
+    useSocket('lead:updated', useCallback((lead: any) => {
+        setLeads(prev => prev.map(l => l._id === lead._id ? lead : l))
+    }, []))
 
     const metrics = useMemo(() => {
         const totalLeads = leads.length

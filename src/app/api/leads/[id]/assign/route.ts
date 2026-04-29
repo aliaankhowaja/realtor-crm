@@ -1,6 +1,7 @@
 import mongoose from 'mongoose'
 
 import connectDB from '@/lib/db'
+import { broadcast } from '@/lib/broadcast'
 import { getSessionUser } from '@/lib/getSessionUser'
 import Lead from '@/models/Lead'
 import Activity from '@/models/Activity'
@@ -60,8 +61,8 @@ export async function PUT(request: Request, { params }: { params: Promise<{ id: 
       performedBy: user.id
     })
 
-    if ((global as any).io) {
-      ;(global as any).io.emit('lead:assigned', {
+    if (true) {
+      await broadcast(request, 'lead:assigned', {
         leadId: id,
         agentId,
         agentName: agent?.name
