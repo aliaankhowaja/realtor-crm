@@ -1,12 +1,12 @@
 'use client'
 
-import { useState, useEffect } from 'react'
-import { useRouter, useParams } from 'next/navigation'
+import { useState, useEffect, useCallback } from 'react'
+import { useParams } from 'next/navigation'
 import { ILead } from '@/types/index'
 import AssignLeadPanel from '@/components/leads/AssignLeadPanel'
+import ActivityTimeline from '@/components/leads/ActivityTimeline'
 
 export default function AdminLeadDetailPage() {
-    const router = useRouter()
     const params = useParams()
     const leadId = params.id as string
 
@@ -15,9 +15,9 @@ export default function AdminLeadDetailPage() {
         name: '',
         email: '',
         phone: '',
-        propertyInterest: 'House' as any,
+        propertyInterest: 'House' as ILead['propertyInterest'],
         budget: '',
-        status: 'New' as any,
+        status: 'New' as ILead['status'],
         notes: '',
         followUpDate: ''
     })
@@ -26,11 +26,7 @@ export default function AdminLeadDetailPage() {
     const [error, setError] = useState('')
     const [success, setSuccess] = useState('')
 
-    useEffect(() => {
-        fetchLead()
-    }, [])
-
-    const fetchLead = async () => {
+    const fetchLead = useCallback(async () => {
         try {
             setLoading(true)
             const response = await fetch(`/api/leads/${leadId}`)
@@ -48,18 +44,27 @@ export default function AdminLeadDetailPage() {
                 notes: data.notes || '',
                 followUpDate: data.followUpDate ? data.followUpDate.split('T')[0] : ''
             })
-        } catch (err: any) {
-            setError(err.message)
+        } catch (err: unknown) {
+            setError(err instanceof Error ? err.message : 'Failed to load lead')
         } finally {
             setLoading(false)
         }
-    }
+    }, [leadId])
+
+    useEffect(() => {
+        void Promise.resolve().then(() => fetchLead())
+    }, [fetchLead])
 
     const currentAgentId = (() => {
         if (!lead?.assignedTo) return null
 
-        const assignedTo = lead.assignedTo as any
-        return assignedTo?._id?.toString?.() ?? assignedTo?.toString?.() ?? null
+        const assignedTo = lead.assignedTo as { _id?: unknown; toString?: () => string }
+
+        if (assignedTo._id) {
+            return String(assignedTo._id)
+        }
+
+        return assignedTo.toString ? assignedTo.toString() : null
     })()
 
     const handleChange = (e: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement | HTMLSelectElement>) => {
@@ -92,8 +97,8 @@ export default function AdminLeadDetailPage() {
             setLead(updatedLead)
             setSuccess('Lead updated successfully')
             setTimeout(() => setSuccess(''), 3000)
-        } catch (err: any) {
-            setError(err.message)
+        } catch (err: unknown) {
+            setError(err instanceof Error ? err.message : 'Failed to update lead')
         } finally {
             setSaving(false)
         }
@@ -267,7 +272,10 @@ export default function AdminLeadDetailPage() {
                             </span>
                         </p>
                         <p className="mb-3">
-                            <strong>Assigned To:</strong> {lead.assignedTo ? (lead.assignedTo as any)?.name || 'Unknown' : 'Unassigned'}
+                            <strong>Assigned To:</strong>{' '}
+                            {lead.assignedTo && typeof lead.assignedTo === 'object' && 'name' in lead.assignedTo
+                                ? String((lead.assignedTo as { name?: string }).name || 'Unknown')
+                                : 'Unassigned'}
                         </p>
                         <p className="mb-3">
                             <strong>Created:</strong> {new Date(lead.createdAt).toLocaleDateString()}
@@ -279,7 +287,7 @@ export default function AdminLeadDetailPage() {
 
                     <h3 className="text-xl font-bold mb-4">Activity Timeline</h3>
                     <div className="bg-white p-6 rounded border border-gray-300">
-                        <p className="text-gray-500">Activity timeline will be available in Module 8</p>
+                        <ActivityTimeline leadId={leadId} />
                     </div>
                 </div>
             </div>

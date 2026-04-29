@@ -2,6 +2,7 @@
 
 import { useState, useEffect, useCallback } from 'react'
 import { useSession } from 'next-auth/react'
+import { useSearchParams } from 'next/navigation'
 import LeadTable from '@/components/leads/LeadTable'
 import LeadFilters from '@/components/leads/LeadFilters'
 import { useSocket } from '@/hooks/useSocket'
@@ -14,15 +15,13 @@ export default function AgentLeadsPage() {
     const [filters, setFilters] = useState({ status: '', priority: '', search: '' })
     const { data: session } = useSession()
     const { showToast } = useToastContext()
+    const searchParams = useSearchParams()
+    const alertQuery = searchParams.toString()
 
-    useEffect(() => {
-        fetchLeads()
-    }, [filters])
-
-    const fetchLeads = async () => {
+    const fetchLeads = useCallback(async () => {
         try {
             setLoading(true)
-            const params = new URLSearchParams()
+            const params = new URLSearchParams(alertQuery)
             if (filters.status) params.append('status', filters.status)
             if (filters.priority) params.append('priority', filters.priority)
             if (filters.search) params.append('search', filters.search)
@@ -32,21 +31,25 @@ export default function AgentLeadsPage() {
 
             const data = await response.json()
             setLeads(data)
-        } catch (error) {
+        } catch (error: unknown) {
             console.error('Error fetching leads:', error)
             alert('Failed to load leads')
         } finally {
             setLoading(false)
         }
-    }
+    }, [alertQuery, filters.priority, filters.search, filters.status])
+
+    useEffect(() => {
+        void Promise.resolve().then(() => fetchLeads())
+    }, [fetchLeads])
 
     // Socket event: lead assigned to this agent
     useSocket('lead:assigned', useCallback(({ agentId }: { leadId: string; agentId: string; agentName: string }) => {
         if (agentId === session?.user?.id) {
-            fetchLeads()
+            void fetchLeads()
             showToast('A new lead has been assigned to you', 'info')
         }
-    }, [session?.user?.id, showToast]))
+    }, [fetchLeads, session?.user?.id, showToast]))
 
     const handleFilterChange = (newFilters: { status?: string; priority?: string; search?: string }) => {
         setFilters({

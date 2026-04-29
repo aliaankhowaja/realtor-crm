@@ -27,7 +27,7 @@ export async function GET(request: Request) {
     await connectDB()
 
     // Build filter object
-    const filter: any = {}
+    const filter: Record<string, unknown> = {}
 
     // If agent, only show assigned leads
     if (user.role === 'agent') {
@@ -39,6 +39,8 @@ export async function GET(request: Request) {
     const status = url.searchParams.get('status')
     const priority = url.searchParams.get('priority')
     const search = url.searchParams.get('search')
+    const overdue = url.searchParams.get('overdue')
+    const stale = url.searchParams.get('stale')
 
     // Apply filters
     if (status) {
@@ -51,6 +53,14 @@ export async function GET(request: Request) {
 
     if (search) {
       filter.name = { $regex: search, $options: 'i' }
+    }
+
+    if (overdue === '1') {
+      filter.followUpDate = { $lt: new Date(), $ne: null }
+    }
+
+    if (stale === '1') {
+      filter.updatedAt = { $lt: new Date(Date.now() - 7 * 24 * 60 * 60 * 1000) }
     }
 
     // Fetch leads
@@ -106,8 +116,11 @@ export async function POST(request: Request) {
     })
 
     // Emit socket event if available
-    if ((global as any).io) {
-      (global as any).io.emit('lead:created', lead)
+    const socketServer = (globalThis as typeof globalThis & {
+      io?: { emit: (event: string, payload: unknown) => void }
+    }).io
+    if (socketServer) {
+      socketServer.emit('lead:created', lead)
     }
 
     // Send email notification to admin

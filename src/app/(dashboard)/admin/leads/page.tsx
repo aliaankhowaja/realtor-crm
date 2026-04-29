@@ -2,6 +2,7 @@
 
 import { useState, useEffect, useCallback } from 'react'
 import Link from 'next/link'
+import { useSearchParams } from 'next/navigation'
 import LeadTable from '@/components/leads/LeadTable'
 import LeadFilters from '@/components/leads/LeadFilters'
 import { useSocket } from '@/hooks/useSocket'
@@ -13,15 +14,13 @@ export default function AdminLeadsPage() {
     const [loading, setLoading] = useState(true)
     const [filters, setFilters] = useState({ status: '', priority: '', search: '' })
     const { showToast } = useToastContext()
+    const searchParams = useSearchParams()
+    const alertQuery = searchParams.toString()
 
-    useEffect(() => {
-        fetchLeads()
-    }, [filters])
-
-    const fetchLeads = async () => {
+    const fetchLeads = useCallback(async () => {
         try {
             setLoading(true)
-            const params = new URLSearchParams()
+            const params = new URLSearchParams(alertQuery)
             if (filters.status) params.append('status', filters.status)
             if (filters.priority) params.append('priority', filters.priority)
             if (filters.search) params.append('search', filters.search)
@@ -31,13 +30,17 @@ export default function AdminLeadsPage() {
 
             const data = await response.json()
             setLeads(data)
-        } catch (error) {
+        } catch (error: unknown) {
             console.error('Error fetching leads:', error)
             alert('Failed to load leads')
         } finally {
             setLoading(false)
         }
-    }
+    }, [alertQuery, filters.priority, filters.search, filters.status])
+
+    useEffect(() => {
+        void Promise.resolve().then(() => fetchLeads())
+    }, [fetchLeads])
 
     // Socket event: new lead created
     useSocket('lead:created', useCallback((lead: ILead) => {

@@ -104,8 +104,11 @@ export async function PUT(request: Request, { params }: { params: Promise<{ id: 
     })
 
     // Emit socket event if available
-    if ((global as any).io) {
-      (global as any).io.emit('lead:updated', updatedLead)
+    const socketServer = (globalThis as typeof globalThis & {
+      io?: { emit: (event: string, payload: unknown) => void }
+    }).io
+    if (socketServer) {
+      socketServer.emit('lead:updated', updatedLead)
     }
 
     return Response.json(updatedLead, { status: 200 })

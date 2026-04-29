@@ -1,17 +1,17 @@
 'use client'
 
-import { useState, useEffect } from 'react'
-import { useRouter, useParams } from 'next/navigation'
+import { useState, useEffect, useCallback } from 'react'
+import { useParams } from 'next/navigation'
 import { ILead } from '@/types/index'
+import ActivityTimeline from '@/components/leads/ActivityTimeline'
 
 export default function AgentLeadDetailPage() {
-    const router = useRouter()
     const params = useParams()
     const leadId = params.id as string
 
     const [lead, setLead] = useState<ILead | null>(null)
     const [formData, setFormData] = useState({
-        status: 'New' as any,
+        status: 'New' as ILead['status'],
         notes: '',
         followUpDate: ''
     })
@@ -20,11 +20,7 @@ export default function AgentLeadDetailPage() {
     const [error, setError] = useState('')
     const [success, setSuccess] = useState('')
 
-    useEffect(() => {
-        fetchLead()
-    }, [])
-
-    const fetchLead = async () => {
+    const fetchLead = useCallback(async () => {
         try {
             setLoading(true)
             const response = await fetch(`/api/leads/${leadId}`)
@@ -37,12 +33,16 @@ export default function AgentLeadDetailPage() {
                 notes: data.notes || '',
                 followUpDate: data.followUpDate ? data.followUpDate.split('T')[0] : ''
             })
-        } catch (err: any) {
-            setError(err.message)
+        } catch (err: unknown) {
+            setError(err instanceof Error ? err.message : 'Failed to load lead')
         } finally {
             setLoading(false)
         }
-    }
+    }, [leadId])
+
+    useEffect(() => {
+        void Promise.resolve().then(() => fetchLead())
+    }, [fetchLead])
 
     const handleChange = (e: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement | HTMLSelectElement>) => {
         const { name, value } = e.target
@@ -71,8 +71,8 @@ export default function AgentLeadDetailPage() {
             setLead(updatedLead)
             setSuccess('Lead updated successfully')
             setTimeout(() => setSuccess(''), 3000)
-        } catch (err: any) {
-            setError(err.message)
+        } catch (err: unknown) {
+            setError(err instanceof Error ? err.message : 'Failed to update lead')
         } finally {
             setSaving(false)
         }
@@ -194,7 +194,7 @@ export default function AgentLeadDetailPage() {
 
                     <h3 className="text-xl font-bold mb-4">Activity Timeline</h3>
                     <div className="bg-white p-6 rounded border border-gray-300">
-                        <p className="text-gray-500">Activity timeline will be available in Module 8</p>
+                        <ActivityTimeline leadId={leadId} />
                     </div>
                 </div>
             </div>
