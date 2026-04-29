@@ -5,6 +5,8 @@ import Activity from '@/models/Activity'
 import { adminRateLimit, agentRateLimit } from '@/middleware/rateLimit'
 import { validateBody } from '@/middleware/validate'
 import { CreateLeadSchema } from '@/lib/schemas'
+import { sendEmail } from '@/lib/email'
+import { newLeadTemplate } from '@/lib/emailTemplates'
 
 export async function GET(request: Request) {
   try {
@@ -108,8 +110,12 @@ export async function POST(request: Request) {
       (global as any).io.emit('lead:created', lead)
     }
 
-    // TODO: Send email notification when Module 7 is implemented
-    // await sendLeadNotification(lead)
+    // Send email notification to admin
+    const adminEmail = process.env.ADMIN_EMAIL
+    if (adminEmail) {
+      const { subject, html } = newLeadTemplate(lead)
+      await sendEmail({ to: adminEmail, subject, html })
+    }
 
     return Response.json(lead, { status: 201 })
   } catch (error) {

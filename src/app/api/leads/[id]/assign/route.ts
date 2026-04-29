@@ -6,6 +6,8 @@ import Lead from '@/models/Lead'
 import Activity from '@/models/Activity'
 import User from '@/models/User'
 import { adminRateLimit } from '@/middleware/rateLimit'
+import { sendEmail } from '@/lib/email'
+import { leadAssignedTemplate } from '@/lib/emailTemplates'
 
 export async function PUT(request: Request, { params }: { params: Promise<{ id: string }> }) {
   const { id } = await params
@@ -66,7 +68,11 @@ export async function PUT(request: Request, { params }: { params: Promise<{ id: 
       })
     }
 
-    // TODO: Send assignment email when Module 7 mail helpers are available
+    // Send assignment email to agent if assigning (not unassigning)
+    if (agentId && agent) {
+      const { subject, html } = leadAssignedTemplate(updatedLead, agent.name)
+      await sendEmail({ to: agent.email, subject, html })
+    }
 
     return Response.json(updatedLead, { status: 200 })
   } catch (error) {
