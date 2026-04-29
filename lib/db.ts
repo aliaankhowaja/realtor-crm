@@ -1,7 +1,12 @@
-import mongoose from 'mongoose';
+import mongoose, { type Mongoose } from 'mongoose';
 
 declare global {
-  var mongoose: { conn: any; promise: any };
+  var mongoose:
+    | {
+        conn: Mongoose | null;
+        promise: Promise<Mongoose> | null;
+      }
+    | undefined;
 }
 
 async function connectDB() {
