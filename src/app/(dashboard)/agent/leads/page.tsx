@@ -1,14 +1,19 @@
 'use client'
 
-import { useState, useEffect } from 'react'
+import { useState, useEffect, useCallback } from 'react'
+import { useSession } from 'next-auth/react'
 import LeadTable from '@/components/leads/LeadTable'
 import LeadFilters from '@/components/leads/LeadFilters'
+import { useSocket } from '@/hooks/useSocket'
+import { useToastContext } from '@/app/ToastProvider'
 import { ILead } from '@/types/index'
 
 export default function AgentLeadsPage() {
     const [leads, setLeads] = useState<ILead[]>([])
     const [loading, setLoading] = useState(true)
     const [filters, setFilters] = useState({ status: '', priority: '', search: '' })
+    const { data: session } = useSession()
+    const { showToast } = useToastContext()
 
     useEffect(() => {
         fetchLeads()
@@ -34,6 +39,14 @@ export default function AgentLeadsPage() {
             setLoading(false)
         }
     }
+
+    // Socket event: lead assigned to this agent
+    useSocket('lead:assigned', useCallback(({ agentId }: { leadId: string; agentId: string; agentName: string }) => {
+        if (agentId === session?.user?.id) {
+            fetchLeads()
+            showToast('A new lead has been assigned to you', 'info')
+        }
+    }, [session?.user?.id, showToast]))
 
     const handleFilterChange = (newFilters: { status?: string; priority?: string; search?: string }) => {
         setFilters({

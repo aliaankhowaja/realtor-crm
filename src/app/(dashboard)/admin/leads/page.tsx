@@ -1,15 +1,18 @@
 'use client'
 
-import { useState, useEffect } from 'react'
+import { useState, useEffect, useCallback } from 'react'
 import Link from 'next/link'
 import LeadTable from '@/components/leads/LeadTable'
 import LeadFilters from '@/components/leads/LeadFilters'
+import { useSocket } from '@/hooks/useSocket'
+import { useToastContext } from '@/app/ToastProvider'
 import { ILead } from '@/types/index'
 
 export default function AdminLeadsPage() {
     const [leads, setLeads] = useState<ILead[]>([])
     const [loading, setLoading] = useState(true)
     const [filters, setFilters] = useState({ status: '', priority: '', search: '' })
+    const { showToast } = useToastContext()
 
     useEffect(() => {
         fetchLeads()
@@ -35,6 +38,22 @@ export default function AdminLeadsPage() {
             setLoading(false)
         }
     }
+
+    // Socket event: new lead created
+    useSocket('lead:created', useCallback((lead: ILead) => {
+        setLeads(prev => [lead, ...prev])
+        showToast(`New lead created: ${lead.name}`, 'info')
+    }, [showToast]))
+
+    // Socket event: lead updated
+    useSocket('lead:updated', useCallback((lead: ILead) => {
+        setLeads(prev => prev.map(l => l._id?.toString() === lead._id?.toString() ? lead : l))
+    }, []))
+
+    // Socket event: lead assigned
+    useSocket('lead:assigned', useCallback(({ agentName }: { leadId: string; agentId: string; agentName: string }) => {
+        showToast(`Lead assigned to ${agentName}`, 'success')
+    }, [showToast]))
 
     const handleFilterChange = (newFilters: { status?: string; priority?: string; search?: string }) => {
         setFilters({
