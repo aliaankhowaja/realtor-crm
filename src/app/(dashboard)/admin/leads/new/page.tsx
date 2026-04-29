@@ -57,121 +57,129 @@ export default function NewLeadPage() {
     }
 
     return (
-        <div className="p-6 max-w-2xl mx-auto">
-            <h1 className="text-3xl font-bold mb-6">Create New Lead</h1>
-
-            {error && <div className="bg-red-100 border border-red-400 text-red-700 px-4 py-3 rounded mb-4">{error}</div>}
-
-            {score && (
-                <div className="bg-green-100 border border-green-400 text-green-700 px-4 py-3 rounded mb-4">
-                    Lead created! Priority: <strong>{score}</strong>. Redirecting...
-                </div>
-            )}
-
-            <form onSubmit={handleSubmit} className="bg-white p-6 rounded border border-gray-300">
-                <div className="mb-4">
-                    <label htmlFor="name" className="block text-sm font-medium mb-1">
-                        Name *
-                    </label>
-                    <input
-                        id="name"
-                        type="text"
-                        name="name"
-                        value={formData.name}
-                        onChange={handleChange}
-                        required
-                        className="w-full px-3 py-2 border border-gray-300 rounded"
-                    />
+        <main className="min-h-screen bg-slate-50 px-4 py-8 text-slate-900 sm:px-6 lg:px-8">
+            <div className="mx-auto max-w-2xl space-y-6">
+                <div className="rounded-3xl border border-slate-200 bg-white p-6 shadow-sm">
+                    <p className="text-sm font-semibold uppercase tracking-[0.35em] text-sky-600">Lead Pipeline</p>
+                    <h1 className="mt-3 text-3xl font-semibold tracking-tight text-slate-900">Create New Lead</h1>
+                    <p className="mt-2 text-slate-600">Enter the contact information and property requirements for the new lead.</p>
                 </div>
 
-                <div className="mb-4">
-                    <label htmlFor="email" className="block text-sm font-medium mb-1">
-                        Email *
-                    </label>
-                    <input
-                        id="email"
-                        type="email"
-                        name="email"
-                        value={formData.email}
-                        onChange={handleChange}
-                        required
-                        className="w-full px-3 py-2 border border-gray-300 rounded"
-                    />
-                </div>
+                {error && <div className="rounded-3xl border border-red-200 bg-red-50 p-4 text-red-800 shadow-sm">{error}</div>}
 
-                <div className="mb-4">
-                    <label htmlFor="phone" className="block text-sm font-medium mb-1">
-                        Phone *
-                    </label>
-                    <input
-                        id="phone"
-                        type="tel"
-                        name="phone"
-                        value={formData.phone}
-                        onChange={handleChange}
-                        required
-                        className="w-full px-3 py-2 border border-gray-300 rounded"
-                    />
-                </div>
+                {score && (
+                    <div className="rounded-3xl border border-green-200 bg-green-50 p-4 text-green-800 shadow-sm">
+                        Lead created! Priority: <strong>{score}</strong>. Redirecting...
+                    </div>
+                )}
 
-                <div className="mb-4">
-                    <label htmlFor="propertyInterest" className="block text-sm font-medium mb-1">
-                        Property Interest *
-                    </label>
-                    <select
-                        id="propertyInterest"
-                        name="propertyInterest"
-                        value={formData.propertyInterest}
-                        onChange={handleChange}
-                        required
-                        className="w-full px-3 py-2 border border-gray-300 rounded"
-                    >
-                        <option value="House">House</option>
-                        <option value="Plot">Plot</option>
-                        <option value="Apartment">Apartment</option>
-                        <option value="Commercial">Commercial</option>
-                        <option value="Other">Other</option>
-                    </select>
-                </div>
+                <form onSubmit={handleSubmit} className="rounded-3xl border border-slate-200 bg-white p-6 md:p-8 shadow-sm space-y-5">
+                    <div>
+                        <label htmlFor="name" className="block text-sm font-medium text-slate-700 mb-2">
+                            Name *
+                        </label>
+                        <input
+                            id="name"
+                            type="text"
+                            name="name"
+                            value={formData.name}
+                            onChange={handleChange}
+                            required
+                            className="w-full rounded-xl border border-slate-300 bg-slate-50 px-4 py-2.5 text-sm text-slate-900 focus:border-sky-500 focus:outline-none focus:ring-1 focus:ring-sky-500"
+                        />
+                    </div>
 
-                <div className="mb-4">
-                    <label htmlFor="budget" className="block text-sm font-medium mb-1">
-                        Budget (PKR) *
-                    </label>
-                    <input
-                        id="budget"
-                        type="number"
-                        name="budget"
-                        value={formData.budget}
-                        onChange={handleChange}
-                        required
-                        min="0"
-                        className="w-full px-3 py-2 border border-gray-300 rounded"
-                    />
-                </div>
+                    <div>
+                        <label htmlFor="email" className="block text-sm font-medium text-slate-700 mb-2">
+                            Email *
+                        </label>
+                        <input
+                            id="email"
+                            type="email"
+                            name="email"
+                            value={formData.email}
+                            onChange={handleChange}
+                            required
+                            className="w-full rounded-xl border border-slate-300 bg-slate-50 px-4 py-2.5 text-sm text-slate-900 focus:border-sky-500 focus:outline-none focus:ring-1 focus:ring-sky-500"
+                        />
+                    </div>
 
-                <div className="mb-4">
-                    <label htmlFor="notes" className="block text-sm font-medium mb-1">
-                        Notes
-                    </label>
-                    <textarea
-                        id="notes"
-                        name="notes"
-                        value={formData.notes}
-                        onChange={handleChange}
-                        rows={4}
-                        className="w-full px-3 py-2 border border-gray-300 rounded"
-                    />
-                </div>
+                    <div>
+                        <label htmlFor="phone" className="block text-sm font-medium text-slate-700 mb-2">
+                            Phone *
+                        </label>
+                        <input
+                            id="phone"
+                            type="tel"
+                            name="phone"
+                            value={formData.phone}
+                            onChange={handleChange}
+                            required
+                            className="w-full rounded-xl border border-slate-300 bg-slate-50 px-4 py-2.5 text-sm text-slate-900 focus:border-sky-500 focus:outline-none focus:ring-1 focus:ring-sky-500"
+                        />
+                    </div>
 
-                <button
-                    type="submit"
-                    disabled={loading}
-                    className="bg-blue-600 text-white px-6 py-2 rounded hover:bg-blue-700 disabled:opacity-50"
-                >
-                    {loading ? 'Creating...' : 'Create Lead'}
-                </button>
-            </form>
-        </div>
+                    <div>
+                        <label htmlFor="propertyInterest" className="block text-sm font-medium text-slate-700 mb-2">
+                            Property Interest *
+                        </label>
+                        <select
+                            id="propertyInterest"
+                            name="propertyInterest"
+                            value={formData.propertyInterest}
+                            onChange={handleChange}
+                            required
+                            className="w-full rounded-xl border border-slate-300 bg-slate-50 px-4 py-2.5 text-sm text-slate-900 focus:border-sky-500 focus:outline-none focus:ring-1 focus:ring-sky-500"
+                        >
+                            <option value="House">House</option>
+                            <option value="Plot">Plot</option>
+                            <option value="Apartment">Apartment</option>
+                            <option value="Commercial">Commercial</option>
+                            <option value="Other">Other</option>
+                        </select>
+                    </div>
+
+                    <div>
+                        <label htmlFor="budget" className="block text-sm font-medium text-slate-700 mb-2">
+                            Budget (PKR) *
+                        </label>
+                        <input
+                            id="budget"
+                            type="number"
+                            name="budget"
+                            value={formData.budget}
+                            onChange={handleChange}
+                            required
+                            min="0"
+                            className="w-full rounded-xl border border-slate-300 bg-slate-50 px-4 py-2.5 text-sm text-slate-900 focus:border-sky-500 focus:outline-none focus:ring-1 focus:ring-sky-500"
+                        />
+                    </div>
+
+                    <div>
+                        <label htmlFor="notes" className="block text-sm font-medium text-slate-700 mb-2">
+                            Notes
+                        </label>
+                        <textarea
+                            id="notes"
+                            name="notes"
+                            value={formData.notes}
+                            onChange={handleChange}
+                            rows={4}
+                            className="w-full rounded-xl border border-slate-300 bg-slate-50 px-4 py-2.5 text-sm text-slate-900 focus:border-sky-500 focus:outline-none focus:ring-1 focus:ring-sky-500"
+                        />
+                    </div>
+
+                    <div className="pt-2">
+                        <button
+                            type="submit"
+                            disabled={loading}
+                            className="w-full rounded-xl bg-sky-600 px-4 py-3 text-sm font-medium text-white transition hover:bg-sky-700 disabled:opacity-70"
+                        >
+                            {loading ? 'Creating...' : 'Create Lead'}
+                        </button>
+                    </div>
+                </form>
+            </div>
+        </main>
     )
 }

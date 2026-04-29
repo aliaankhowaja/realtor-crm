@@ -78,126 +78,145 @@ export default function AgentLeadDetailPage() {
         }
     }
 
-    if (loading) return <div className="p-6">Loading...</div>
-    if (!lead) return <div className="p-6 text-red-600">Lead not found</div>
+    if (loading) return <div className="flex min-h-screen items-center justify-center bg-slate-50"><div className="h-8 w-8 animate-spin rounded-full border-4 border-slate-300 border-t-sky-600"></div></div>
+    if (!lead) return <div className="flex min-h-screen items-center justify-center bg-slate-50 text-xl font-medium text-slate-500">Lead not found</div>
 
     return (
-        <div className="p-6 max-w-4xl mx-auto">
-            <div className="flex justify-between items-center mb-6">
-                <h1 className="text-3xl font-bold">{lead.name}</h1>
-                <a
-                    href={`https://wa.me/92${lead.phone.replace(/^0/, '')}`}
-                    target="_blank"
-                    rel="noopener noreferrer"
-                    className="bg-green-600 text-white px-4 py-2 rounded hover:bg-green-700"
-                >
-                    WhatsApp
-                </a>
-            </div>
-
-            {error && <div className="bg-red-100 border border-red-400 text-red-700 px-4 py-3 rounded mb-4">{error}</div>}
-            {success && <div className="bg-green-100 border border-green-400 text-green-700 px-4 py-3 rounded mb-4">{success}</div>}
-
-            <div className="grid grid-cols-2 gap-6">
-                <div>
-                    <h2 className="text-2xl font-bold mb-4">Update Lead</h2>
-                    <form onSubmit={handleSubmit} className="bg-white p-6 rounded border border-gray-300">
-                        <div className="mb-4">
-                            <label htmlFor="status" className="block text-sm font-medium mb-1">
-                                Status
-                            </label>
-                            <select
-                                id="status"
-                                name="status"
-                                value={formData.status}
-                                onChange={handleChange}
-                                className="w-full px-3 py-2 border border-gray-300 rounded"
-                            >
-                                <option value="New">New</option>
-                                <option value="Contacted">Contacted</option>
-                                <option value="In Progress">In Progress</option>
-                                <option value="Closed">Closed</option>
-                            </select>
-                        </div>
-
-                        <div className="mb-4">
-                            <label htmlFor="notes" className="block text-sm font-medium mb-1">
-                                Notes
-                            </label>
-                            <textarea
-                                id="notes"
-                                name="notes"
-                                value={formData.notes}
-                                onChange={handleChange}
-                                rows={4}
-                                className="w-full px-3 py-2 border border-gray-300 rounded"
-                            />
-                        </div>
-
-                        <div className="mb-4">
-                            <label htmlFor="followUpDate" className="block text-sm font-medium mb-1">
-                                Follow-up Date
-                            </label>
-                            <input
-                                id="followUpDate"
-                                type="date"
-                                name="followUpDate"
-                                value={formData.followUpDate}
-                                onChange={handleChange}
-                                className="w-full px-3 py-2 border border-gray-300 rounded"
-                            />
-                        </div>
-
-                        <button
-                            type="submit"
-                            disabled={saving}
-                            className="bg-blue-600 text-white px-6 py-2 rounded hover:bg-blue-700 disabled:opacity-50"
+        <main className="min-h-screen bg-slate-50 px-4 py-8 text-slate-900 sm:px-6 lg:px-8">
+            <div className="mx-auto max-w-5xl space-y-6">
+                <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between rounded-3xl border border-slate-200 bg-white p-6 shadow-sm">
+                    <div>
+                        <p className="text-sm font-semibold uppercase tracking-[0.35em] text-sky-600">Edit Lead</p>
+                        <h1 className="mt-3 text-3xl font-semibold tracking-tight text-slate-900">{lead.name}</h1>
+                    </div>
+                    <div className="mt-4 sm:mt-0">
+                        <a
+                            href={`https://wa.me/92${lead.phone.replace(/^0/, '')}`}
+                            target="_blank"
+                            rel="noopener noreferrer"
+                            className="inline-flex rounded-full bg-emerald-100 px-6 py-2 text-sm font-medium text-emerald-700 transition hover:bg-emerald-200"
                         >
-                            {saving ? 'Saving...' : 'Save Changes'}
-                        </button>
-                    </form>
+                            Message on WhatsApp
+                        </a>
+                    </div>
                 </div>
 
-                <div>
-                    <h2 className="text-2xl font-bold mb-4">Lead Information</h2>
-                    <div className="bg-white p-6 rounded border border-gray-300 mb-4">
-                        <p className="mb-3">
-                            <strong>Name:</strong> {lead.name}
-                        </p>
-                        <p className="mb-3">
-                            <strong>Email:</strong> {lead.email}
-                        </p>
-                        <p className="mb-3">
-                            <strong>Phone:</strong> {lead.phone}
-                        </p>
-                        <p className="mb-3">
-                            <strong>Property Interest:</strong> {lead.propertyInterest}
-                        </p>
-                        <p className="mb-3">
-                            <strong>Budget:</strong> PKR {lead.budget.toLocaleString('en-PK')}
-                        </p>
-                        <p className="mb-3">
-                            <strong>Priority:</strong>{' '}
-                            <span
-                                className={`px-3 py-1 rounded ${lead.score === 'High' ? 'bg-red-600 text-white' : lead.score === 'Medium' ? 'bg-yellow-500 text-gray-900' : 'bg-green-600 text-white'}`}
-                            >
-                                {lead.score}
-                            </span>
-                        </p>
-                        <p className="mb-3">
-                            <strong>Created:</strong> {new Date(lead.createdAt).toLocaleDateString()}
-                        </p>
-                        <p className="mb-3">
-                            <strong>Updated:</strong> {new Date(lead.updatedAt).toLocaleDateString()}
-                        </p>
+                {error && <div className="rounded-3xl border border-red-200 bg-red-50 p-4 text-red-800 shadow-sm">{error}</div>}
+                {success && <div className="rounded-3xl border border-green-200 bg-green-50 p-4 text-green-800 shadow-sm">{success}</div>}
+
+                <div className="grid grid-cols-1 lg:grid-cols-2 gap-6 items-start">
+                    <div className="space-y-6">
+                        <form onSubmit={handleSubmit} className="rounded-3xl border border-slate-200 bg-white p-6 shadow-sm space-y-5">
+                            <h2 className="text-xl font-semibold text-slate-900 pb-2 border-b border-slate-100">Update Lead</h2>
+
+                            <div>
+                                <label htmlFor="status" className="block text-sm font-medium text-slate-700 mb-2">
+                                    Status
+                                </label>
+                                <select
+                                    id="status"
+                                    name="status"
+                                    value={formData.status}
+                                    onChange={handleChange}
+                                    className="w-full rounded-xl border border-slate-300 bg-slate-50 px-4 py-2.5 text-sm text-slate-900 focus:border-sky-500 focus:outline-none focus:ring-1 focus:ring-sky-500"
+                                >
+                                    <option value="New">New</option>
+                                    <option value="Contacted">Contacted</option>
+                                    <option value="In Progress">In Progress</option>
+                                    <option value="Closed">Closed</option>
+                                </select>
+                            </div>
+
+                            <div>
+                                <label htmlFor="notes" className="block text-sm font-medium text-slate-700 mb-2">
+                                    Notes
+                                </label>
+                                <textarea
+                                    id="notes"
+                                    name="notes"
+                                    value={formData.notes}
+                                    onChange={handleChange}
+                                    rows={4}
+                                    className="w-full rounded-xl border border-slate-300 bg-slate-50 px-4 py-2.5 text-sm text-slate-900 focus:border-sky-500 focus:outline-none focus:ring-1 focus:ring-sky-500"
+                                />
+                            </div>
+
+                            <div>
+                                <label htmlFor="followUpDate" className="block text-sm font-medium text-slate-700 mb-2">
+                                    Follow-up Date
+                                </label>
+                                <input
+                                    id="followUpDate"
+                                    type="date"
+                                    name="followUpDate"
+                                    value={formData.followUpDate}
+                                    onChange={handleChange}
+                                    className="w-full rounded-xl border border-slate-300 bg-slate-50 px-4 py-2.5 text-sm text-slate-900 focus:border-sky-500 focus:outline-none focus:ring-1 focus:ring-sky-500"
+                                />
+                            </div>
+
+                            <div className="pt-2">
+                                <button
+                                    type="submit"
+                                    disabled={saving}
+                                    className="w-full rounded-xl bg-sky-600 px-4 py-3 text-sm font-medium text-white transition hover:bg-sky-700 disabled:opacity-70"
+                                >
+                                    {saving ? 'Saving...' : 'Save Changes'}
+                                </button>
+                            </div>
+                        </form>
                     </div>
 
-                    <h3 className="text-xl font-bold mb-4">Activity Timeline</h3>
-                    <div className="bg-white p-6 rounded border border-gray-300">
-                        <ActivityTimeline leadId={leadId} />
+                    <div className="space-y-6">
+                        <div className="rounded-3xl border border-slate-200 bg-white p-6 shadow-sm">
+                            <h2 className="text-xl font-semibold text-slate-900 pb-2 border-b border-slate-100 mb-4">Lead Information</h2>
+                            <div className="space-y-3 text-sm">
+                                <p className="flex items-center justify-between">
+                                    <span className="text-slate-500">Name</span>
+                                    <span className="font-medium text-slate-900">{lead.name}</span>
+                                </p>
+                                <p className="flex items-center justify-between">
+                                    <span className="text-slate-500">Email</span>
+                                    <span className="font-medium text-slate-900">{lead.email}</span>
+                                </p>
+                                <p className="flex items-center justify-between">
+                                    <span className="text-slate-500">Phone</span>
+                                    <span className="font-medium text-slate-900">{lead.phone}</span>
+                                </p>
+                                <p className="flex items-center justify-between">
+                                    <span className="text-slate-500">Interest</span>
+                                    <span className="font-medium text-slate-900">{lead.propertyInterest}</span>
+                                </p>
+                                <p className="flex items-center justify-between">
+                                    <span className="text-slate-500">Budget</span>
+                                    <span className="font-medium text-slate-900">PKR {lead.budget.toLocaleString('en-PK')}</span>
+                                </p>
+                                <p className="flex items-center justify-between pt-2 border-t border-slate-100">
+                                    <span className="text-slate-500">Priority</span>
+                                    <span
+                                        className={`inline-flex items-center rounded-full border px-2.5 py-0.5 text-xs font-medium ${lead.score === 'High' ? 'bg-red-100 text-red-800 border-red-200' : lead.score === 'Medium' ? 'bg-yellow-100 text-yellow-800 border-yellow-200' : 'bg-green-100 text-green-800 border-green-200'}`}
+                                    >
+                                        {lead.score}
+                                    </span>
+                                </p>
+                                <p className="flex items-center justify-between">
+                                    <span className="text-slate-500">Created</span>
+                                    <span className="font-medium text-slate-900">{new Date(lead.createdAt).toLocaleDateString()}</span>
+                                </p>
+                                <p className="flex items-center justify-between">
+                                    <span className="text-slate-500">Updated</span>
+                                    <span className="font-medium text-slate-900">{new Date(lead.updatedAt).toLocaleDateString()}</span>
+                                </p>
+                            </div>
+                        </div>
+
+                        <div className="rounded-3xl border border-slate-200 bg-white p-6 shadow-sm">
+                            <h2 className="text-xl font-semibold text-slate-900 pb-2 border-b border-slate-100 mb-4">Activity Timeline</h2>
+                            <ActivityTimeline leadId={leadId} />
+                        </div>
                     </div>
                 </div>
             </div>
-        </div>
+        </main>
     )
 }

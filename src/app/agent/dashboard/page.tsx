@@ -81,10 +81,17 @@ export default function AgentDashboardPage() {
             <div className="mx-auto max-w-7xl space-y-6">
                 <FollowUpAlerts leadsHref="/agent/leads" />
 
-                <div className="rounded-3xl border border-slate-200 bg-white p-6 shadow-sm">
-                    <p className="text-sm font-semibold uppercase tracking-[0.35em] text-sky-600">My Pipeline</p>
-                    <h1 className="mt-3 text-3xl font-semibold tracking-tight text-slate-900">Agent Dashboard</h1>
-                    <p className="mt-2 text-slate-600">Review your assigned leads and recent activity at a glance.</p>
+                <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between rounded-3xl border border-slate-200 bg-white p-6 shadow-sm">
+                    <div>
+                        <p className="text-sm font-semibold uppercase tracking-[0.35em] text-sky-600">My Pipeline</p>
+                        <h1 className="mt-3 text-3xl font-semibold tracking-tight text-slate-900">Agent Dashboard</h1>
+                        <p className="mt-2 text-slate-600">Review your assigned leads and recent activity at a glance.</p>
+                    </div>
+                    <div className="mt-4 sm:mt-0">
+                        <Link href="/agent/leads" className="inline-flex rounded-full bg-sky-600 px-6 py-2 text-sm font-medium text-white transition hover:bg-sky-700">
+                            View All Leads
+                        </Link>
+                    </div>
                 </div>
 
                 {loading ? (
