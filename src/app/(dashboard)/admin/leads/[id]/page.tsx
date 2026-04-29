@@ -3,6 +3,7 @@
 import { useState, useEffect } from 'react'
 import { useRouter, useParams } from 'next/navigation'
 import { ILead } from '@/types/index'
+import AssignLeadPanel from '@/components/leads/AssignLeadPanel'
 
 export default function AdminLeadDetailPage() {
     const router = useRouter()
@@ -53,6 +54,13 @@ export default function AdminLeadDetailPage() {
             setLoading(false)
         }
     }
+
+    const currentAgentId = (() => {
+        if (!lead?.assignedTo) return null
+
+        const assignedTo = lead.assignedTo as any
+        return assignedTo?._id?.toString?.() ?? assignedTo?.toString?.() ?? null
+    })()
 
     const handleChange = (e: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement | HTMLSelectElement>) => {
         const { name, value } = e.target
@@ -248,6 +256,8 @@ export default function AdminLeadDetailPage() {
                 </div>
 
                 <div>
+                    <AssignLeadPanel leadId={leadId} currentAgentId={currentAgentId} onAssigned={fetchLead} />
+
                     <h2 className="text-2xl font-bold mb-4">Lead Information</h2>
                     <div className="bg-white p-6 rounded border border-gray-300 mb-4">
                         <p className="mb-3">
