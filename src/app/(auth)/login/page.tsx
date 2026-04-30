@@ -1,6 +1,5 @@
 'use client';
 
-import { getSession, signIn } from 'next-auth/react';
 import Link from 'next/link';
 import { useRouter } from 'next/navigation';
 import { useState } from 'react';
@@ -20,19 +19,20 @@ export default function LoginPage() {
         setLoading(true);
 
         try {
-            const result = await signIn('credentials', {
-                email,
-                password,
-                redirect: false,
+            const res = await fetch('/api/auth/login', {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({ email, password })
             });
+            const data = await res.json();
 
-            if (result?.error) {
-                setError(result.error);
+            if (!res.ok || data.error) {
+                setError(data.error || 'Authentication failed');
+                setLoading(false);
                 return;
             }
 
-            const session = await getSession();
-            const role = session?.user?.role as AuthRole | undefined;
+            const role = data.user?.role as AuthRole | undefined;
 
             if (role === 'admin') {
                 router.push('/admin/dashboard');

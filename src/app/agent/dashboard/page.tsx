@@ -2,7 +2,6 @@
 
 import Link from 'next/link'
 import { useCallback, useEffect, useMemo, useState } from 'react'
-import { useSession } from 'next-auth/react'
 import { useToastContext } from '@/app/ToastProvider'
 import { useSocket } from '@/hooks/useSocket'
 
@@ -17,13 +16,35 @@ type LeadRecord = {
     createdAt?: string
 }
 
+type LeadAssignedPayload = {
+    leadId: string
+    agentId: string
+}
+
 export default function AgentDashboardPage() {
     const [leads, setLeads] = useState<LeadRecord[]>([])
     const [loading, setLoading] = useState(true)
     const [error, setError] = useState('')
 
-    const { data: session } = useSession()
+    const [sessionUser, setSessionUser] = useState<{ id?: string; role?: string } | null>(null)
     const { showToast } = useToastContext()
+
+    useEffect(() => {
+        let mounted = true
+        void fetch('/api/auth/me')
+            .then((res) => (res.ok ? res.json() : null))
+            .then((data) => {
+                if (!mounted) return
+                setSessionUser(data)
+            })
+            .catch(() => {
+                if (!mounted) return
+                setSessionUser(null)
+            })
+        return () => {
+            mounted = false
+        }
+    }, [])
 
     const fetchLeads = useCallback(async () => {
         try {
@@ -45,20 +66,20 @@ export default function AgentDashboardPage() {
     }, [])
 
     useEffect(() => {
-        void fetchLeads()
+        void Promise.resolve().then(() => fetchLeads())
     }, [fetchLeads])
 
-    useSocket('lead:assigned', useCallback((data: any) => {
-        if (data.agentId === session?.user?.id) {
+    useSocket('lead:assigned', useCallback((data: LeadAssignedPayload) => {
+        if (data.agentId === sessionUser?.id) {
             void fetchLeads()
             showToast('A new lead has been assigned to you', 'info')
         } else if (leads.some(l => l._id === data.leadId)) {
             // It was assigned away from this agent
             void fetchLeads()
         }
-    }, [fetchLeads, session?.user?.id, showToast, leads]))
+    }, [fetchLeads, sessionUser?.id, showToast, leads]))
 
-    useSocket('lead:updated', useCallback((lead: any) => {
+    useSocket('lead:updated', useCallback((lead: LeadRecord) => {
         setLeads(prev => prev.map(l => l._id === lead._id ? lead : l))
     }, []))
 

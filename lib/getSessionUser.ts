@@ -1,4 +1,5 @@
-import { getToken } from 'next-auth/jwt'
+import { cookies } from 'next/headers'
+import { verifyToken } from './jwt'
 
 interface SessionUser {
   id: string
@@ -7,20 +8,23 @@ interface SessionUser {
   role: string
 }
 
-export async function getSessionUser(request: Request): Promise<SessionUser | null> {
-  const token = await getToken({
-    req: request as any,
-    secret: process.env.NEXTAUTH_SECRET
-  })
+export async function getSessionUser(): Promise<SessionUser | null> {
+  const cookieStore = await cookies()
+  const tokenRecord = cookieStore.get('token')
 
-  if (!token) {
+  if (!tokenRecord?.value) {
+    return null
+  }
+
+  const payload = await verifyToken(tokenRecord.value)
+  if (!payload) {
     return null
   }
 
   return {
-    id: token.id as string,
-    name: token.name as string | null,
-    email: token.email as string | null,
-    role: token.role as string
+    id: payload.id as string,
+    name: payload.name as string | null,
+    email: payload.email as string | null,
+    role: payload.role as string
   }
 }

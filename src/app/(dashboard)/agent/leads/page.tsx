@@ -1,7 +1,6 @@
 'use client'
 
 import { useState, useEffect, useCallback, Suspense } from 'react'
-import { useSession } from 'next-auth/react'
 import { useSearchParams } from 'next/navigation'
 import LeadTable from '@/components/leads/LeadTable'
 import LeadFilters from '@/components/leads/LeadFilters'
@@ -13,7 +12,7 @@ function AgentLeadsContent() {
     const [leads, setLeads] = useState<ILead[]>([])
     const [loading, setLoading] = useState(true)
     const [filters, setFilters] = useState({ status: '', priority: '', search: '' })
-    const { data: session } = useSession()
+    const [sessionUser, setSessionUser] = useState<{ id?: string; role?: string } | null>(null)
     const { showToast } = useToastContext()
     const searchParams = useSearchParams()
     const alertQuery = searchParams?.toString() ?? ''
@@ -41,17 +40,31 @@ function AgentLeadsContent() {
 
     useEffect(() => {
         void Promise.resolve().then(() => fetchLeads())
+        let mounted = true
+        void fetch('/api/auth/me')
+            .then((res) => (res.ok ? res.json() : null))
+            .then((data) => {
+                if (!mounted) return
+                setSessionUser(data)
+            })
+            .catch(() => {
+                if (!mounted) return
+                setSessionUser(null)
+            })
+        return () => {
+            mounted = false
+        }
     }, [fetchLeads])
 
     // Socket event: lead assigned to this agent
     useSocket('lead:assigned', useCallback((data: { leadId: string; agentId: string; agentName: string }) => {
-        if (data.agentId === session?.user?.id) {
+        if (data.agentId === sessionUser?.id) {
             void fetchLeads()
             showToast('A new lead has been assigned to you', 'info')
         } else if (leads.some(l => l._id?.toString() === data.leadId)) {
             void fetchLeads()
         }
-    }, [fetchLeads, session?.user?.id, showToast, leads]))
+    }, [fetchLeads, sessionUser?.id, showToast, leads]))
 
     // Socket event: lead updated
     useSocket('lead:updated', useCallback((lead: ILead) => {

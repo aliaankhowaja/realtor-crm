@@ -1,5 +1,5 @@
-import { getToken } from 'next-auth/jwt'
 import { NextRequest, NextResponse } from 'next/server'
+import { verifyToken } from '@/lib/jwt'
 
 const publicPaths = ['/login', '/signup', '/api/auth', '/api/socket']
 
@@ -10,20 +10,27 @@ function isPublicPath(pathname: string): boolean {
 export async function middleware(request: NextRequest) {
   const pathname = request.nextUrl.pathname
 
+  const tokenCookie = request.cookies.get('token')?.value
+  const token = tokenCookie ? await verifyToken(tokenCookie) : null
+
+  // Automatically redirect authenticated users visiting public routes
+  if (token && (pathname === '/' || pathname === '/login' || pathname === '/signup')) {
+    if (token.role === 'admin') {
+      return NextResponse.redirect(new URL('/admin/dashboard', request.url))
+    } else {
+      return NextResponse.redirect(new URL('/agent/dashboard', request.url))
+    }
+  }
+
   if (isPublicPath(pathname)) {
     return NextResponse.next()
   }
-
-  const token = await getToken({
-    req: request,
-    secret: process.env.NEXTAUTH_SECRET
-  })
 
   if (!token) {
     return NextResponse.redirect(new URL('/login', request.url))
   }
 
-  const role = token.role as string
+  const role = token.role
 
   if (pathname.startsWith('/admin')) {
     if (role !== 'admin') {

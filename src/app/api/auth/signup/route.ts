@@ -16,7 +16,7 @@ type SignupInput = z.infer<typeof signupSchema>;
 export async function POST(request: Request) {
   try {
     const ip = request.headers.get('x-forwarded-for') ?? 'unknown';
-    const user = await getSessionUser(request);
+    const user = await getSessionUser();
     const allowed = user?.role === 'admin' ? adminRateLimit(ip) : agentRateLimit(ip);
 
     if (!allowed) {
